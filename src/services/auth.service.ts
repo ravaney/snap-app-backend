@@ -3,57 +3,64 @@ import { LoginInput, loginSchema } from "../schemas/login.schema";
 import { userRepository } from "../repositories/user.repository";
 import { tokenService } from "./token.service";
 import { sessionRepository } from "../repositories/session.repository";
+import { HttpError } from "../errors/http.error";
 
 export const authService = {
   async login(input: LoginInput) {
     const validatedInput = loginSchema.parse(input);
-    try {
-      const user =
-        validatedInput.method === "EMAIL"
-          ? await userRepository.findByEmail(input.username)
-          : validatedInput.method === "PHONE"
-            ? await userRepository.findByPhone(input.username)
-            : await userRepository.findBySnapId(input.username);
+    const user =
+      validatedInput.method === "EMAIL"
+        ? await userRepository.findByEmail(input.username)
+        : validatedInput.method === "PHONE"
+          ? await userRepository.findByPhone(input.username)
+          : await userRepository.findBySnapId(input.username);
 
-      if (!user) {
-        throw new Error("User doesnt exist");
-      }
-
-      const passwordMatches = await bcrypt.compare(
-        input.password,
-        user.passwordHash,
+    if (!user) {
+      throw new HttpError(
+        401,
+        "Invalid username or password",
+        "INVALID_CREDENTIALS",
       );
-      if (!passwordMatches) throw new Error("Invalid username or password");
-
-      const accessToken = tokenService.createAccessToken({
-        id: user.id,
-        role: user.firstName,
-      });
-
-      const refreshToken = tokenService.createRefreshToken();
-      const refreshTokenHash = tokenService.hashRefreshToken(refreshToken);
-
-      await sessionRepository.createSessionData({
-        userId: user.id,
-        refreshTokenHash,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      });
-
-      return {
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          phone: user.phone,
-          snapTag: user.snapTag,
-        },
-        accessToken,
-        refreshToken,
-      };
-    } catch (error) {
-      throw error;
     }
+
+    const passwordMatches = await bcrypt.compare(
+      input.password,
+      user.passwordHash,
+    );
+    if (!passwordMatches) {
+      throw new HttpError(
+        401,
+        "Invalid username or password",
+        "INVALID_CREDENTIALS",
+      );
+    }
+
+    const accessToken = tokenService.createAccessToken({
+      id: user.id,
+      role: user.firstName,
+    });
+
+    const refreshToken = tokenService.createRefreshToken();
+    const refreshTokenHash = tokenService.hashRefreshToken(refreshToken);
+
+    await sessionRepository.createSessionData({
+      userId: user.id,
+      refreshTokenHash,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    return {
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        snapTag: user.snapTag,
+      },
+      accessToken,
+      refreshToken,
+    };
   },
 
   async logout(refreshToken?: string) {

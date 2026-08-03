@@ -5,6 +5,7 @@ import authRoutes from "./src/routes/auth.routes";
 import userRoutes from "./src/routes/user.routes";
 import { connectDatabase, disconnectDatabase } from "./src/config/database";
 import accountRoutes from "./src/routes/account.routes";
+import { errorHandler } from "./src/middleware/errorHandler";
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
@@ -26,6 +27,7 @@ app.get("/", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/account", accountRoutes);
+app.use(errorHandler);
 
 const startServer = async () => {
   try {

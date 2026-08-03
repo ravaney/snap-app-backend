@@ -181,7 +181,13 @@ Validation failure: `400 Bad Request`
 }
 ```
 
-Login errors forwarded by the controller are currently handled by Express's default error handler. Their body is not guaranteed to be JSON.
+Unknown users and incorrect passwords return `401 Unauthorized` with the same generic response so the API does not reveal whether an identifier is registered:
+
+```json
+{
+  "message": "Invalid username or password",
+  "code": "INVALID_CREDENTIALS"
+}
 
 ## Refresh session
 
@@ -428,7 +434,13 @@ A production deposit should be initiated and confirmed through a trusted payment
 
 ## Error handling
 
-Validation and authentication middleware return JSON errors directly. Controllers that call `next(error)` currently fall through to Express's default error handler because no custom global JSON error middleware is registered. Those failures may return HTML rather than the JSON structures shown for middleware errors.
+Validation and authentication middleware return JSON errors directly. Known HTTP errors forwarded by controllers retain their status and JSON message. Unexpected errors return:
+
+```json
+{
+  "message": "Internal server error",
+  "code": "INTERNAL_SERVER_ERROR"
+}
 
 ## Token lifecycle
 
