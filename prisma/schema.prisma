@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  email        String?
+  phone        String?
+  firstName    String
+  lastName     String
+  passwordHash String
+  snapTag      String    @unique
+  acceptTerms  DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+  wallet       Wallet?
+}
+
+//block level attributes
+// @unique([email, phone]) means that either email or phone must be unique across all users, but not both. If you want to enforce uniqueness on both fields, you can use the following syntax:
+//@@index([email]) helps to create an index on the email field, which can improve query performance when searching for users by email. Similarly, you can create an index on the phone field if needed.
+//@@id([email, phone]) means that the combination of email and phone must be unique across all users. This is useful if you want to allow users to sign up with either email or phone, but not both.
+//@@map("users") means that the User model will be mapped to a collection named "users" in the MongoDB database. This is useful if you want to use a different name for the collection than the model name.
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+model Wallet {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String        @unique @db.ObjectId
+  currency     String        @default("USD") // "USD", "CAD", etc.
+  balanceMinor BigInt        @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  status       AccountStatus @default(ACTIVE)
+
+  user         User                @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  REFUND
+  FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum Direction {
+  CREDIT
+  DEBIT
+}
+
+model WalletTransaction {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  walletId          String            @db.ObjectId
+  type              TransactionType
+  amountMinor       BigInt
+  balanceAfterMinor BigInt?
+  status            TransactionStatus @default(PENDING)
+  direction         Direction         @default(CREDIT)
+  description       String?
+  idempotencyKey    String            @unique
+  relatedId         String?
+  createdAt         DateTime          @default(now())
+  completedAt       DateTime?
+  metadata          Json?
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+model Session {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String    @db.ObjectId
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime? @default(now())
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
