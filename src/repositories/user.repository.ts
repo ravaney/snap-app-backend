@@ -119,8 +119,8 @@ export const userRepository = {
     return prisma.user.findMany({
       where: {
         OR: [
-          { firstName: { contains: query, mode: "insensitive" } },
-          { lastName: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+          { phone: { contains: query, mode: "insensitive" } },
           { snapTag: { contains: query, mode: "insensitive" } },
         ],
       },
