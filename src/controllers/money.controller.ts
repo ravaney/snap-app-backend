@@ -6,7 +6,6 @@ export const moneyController = {
     try {
       const senderId = req.auth?.userId;
       if (!senderId) throw new Error("Authentication required");
-      console.log("req.body.walletId", req.body);
       const { isDuplicate } = await moneyServices.transfer({
         senderUserId: senderId,
         receiverAccountId: req.body.walletId,

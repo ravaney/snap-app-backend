@@ -32,4 +32,14 @@ export const userService = {
     if (!user) throw new Error("User not found");
     return user;
   },
+  async searchUsers(query: string) {
+    const users = await userRepository.searchPublicUsers(query.trim());
+
+    return users.map(({ snapTag, wallet, firstName, lastName }) => ({
+      snapTag,
+      walletId: wallet?.id ?? null,
+      firstName,
+      lastName,
+    }));
+  },
 };

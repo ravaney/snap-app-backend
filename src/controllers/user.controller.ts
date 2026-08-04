@@ -56,3 +56,17 @@ export const meController: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+export const searchUsersController: RequestHandler = async (req, res, next) => {
+  try {
+    const query = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    if (!query) {
+      return res.status(400).json({ message: "Query parameter q is required" });
+    }
+
+    const users = await userService.searchUsers(query);
+    return res.status(200).json({ data: users });
+  } catch (error) {
+    next(error);
+  }
+};

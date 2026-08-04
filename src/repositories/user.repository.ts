@@ -115,6 +115,24 @@ export const userRepository = {
       select: currentUserSelect,
     });
   },
+  searchPublicUsers(query: string) {
+    return prisma.user.findMany({
+      where: {
+        OR: [
+          { firstName: { contains: query, mode: "insensitive" } },
+          { lastName: { contains: query, mode: "insensitive" } },
+          { snapTag: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        snapTag: true,
+        wallet: { select: { id: true } },
+      },
+      take: 20,
+    });
+  },
   //implemented
   create(data: UserData) {
     return prisma.user.create({
