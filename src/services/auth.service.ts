@@ -46,7 +46,7 @@ export const authService = {
     await sessionRepository.createSessionData({
       userId: user.id,
       refreshTokenHash,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
     return {
