@@ -1,9 +1,4 @@
-import {
-  NextFunction,
-  request,
-  response,
-  type CookieOptions,
-} from "express";
+import { NextFunction, request, response, type CookieOptions } from "express";
 import { authService } from "../services/auth.service";
 
 const refreshCookieOptions: CookieOptions = {
@@ -33,7 +28,7 @@ export const authController = {
 
       res.cookie("refreshToken", result.refreshToken, {
         ...refreshCookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
       return res.status(200).json({
         user: result.user,
@@ -71,7 +66,7 @@ export const authController = {
 
       res.cookie("refreshToken", result.refreshToken, {
         ...refreshCookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 5 * 60 * 1000,
       });
 
       return res.status(200).json({

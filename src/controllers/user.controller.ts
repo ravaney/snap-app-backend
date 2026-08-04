@@ -41,8 +41,8 @@ export const meController: RequestHandler = async (req, res, next) => {
 
     const user = await userService.getMe(req.auth.userId);
 
-    return res.status(200).json({
-      user: serializeForJson({
+    return res.status(200).json(
+      serializeForJson({
         ...user,
         wallet: user?.wallet
           ? {
@@ -51,7 +51,7 @@ export const meController: RequestHandler = async (req, res, next) => {
             }
           : null,
       }),
-    });
+    );
   } catch (error) {
     next(error);
   }

@@ -13,7 +13,7 @@ export type CreateAccountTransactionData = {
   status: TransactionStatus;
   direction: "CREDIT" | "DEBIT";
   idempotencyKey: string;
-  relatedWalletId: string;
+  relatedId: string;
   completedAt: Date | null;
   description?: string;
   metadata?: Prisma.InputJsonValue | null;

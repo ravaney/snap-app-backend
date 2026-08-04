@@ -15,6 +15,6 @@ router.post(
   validate(snapTransferSchema),
   moneyController.transfer,
 );
-router.post("/bankcredit", requireAuth, moneyController.deposit);
+router.post("/deposit", requireAuth, moneyController.deposit);
 
 export default router;
