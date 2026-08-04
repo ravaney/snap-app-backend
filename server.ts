@@ -26,7 +26,7 @@ app.get("/", (_req, res) => {
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/account", walletRoutes);
+app.use("/api/wallet", walletRoutes);
 app.use(errorHandler);
 
 const startServer = async () => {
