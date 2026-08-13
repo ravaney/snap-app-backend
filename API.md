@@ -41,16 +41,16 @@ http://localhost:5173
 
 ## Route summary
 
-| Method | Path | Authentication | Description |
-| --- | --- | --- | --- |
-| `GET` | `/` | None | Check whether the API is running |
-| `POST` | `/api/user/signup` | None | Create a user and wallet |
-| `POST` | `/api/auth/login` | None | Log in and create a session |
-| `POST` | `/api/auth/refresh` | Refresh cookie | Rotate the refresh token and issue an access token |
-| `POST` | `/api/auth/logout` | Refresh cookie, if present | Delete the current session and clear the cookie |
-| `GET` | `/api/user/me` | Bearer access token | Return the authenticated user, wallet, and recent transactions |
-| `POST` | `/api/account/transfer` | Bearer access token and idempotency key | Transfer money between wallets; currently blocked by implementation mismatches |
-| `POST` | `/api/account/bankcredit` | Bearer access token | Development deposit route; not safe for production use |
+| Method | Path                      | Authentication                          | Description                                                                    |
+| ------ | ------------------------- | --------------------------------------- | ------------------------------------------------------------------------------ |
+| `GET`  | `/`                       | None                                    | Check whether the API is running                                               |
+| `POST` | `/api/user/signup`        | None                                    | Create a user and wallet                                                       |
+| `POST` | `/api/auth/login`         | None                                    | Log in and create a session                                                    |
+| `POST` | `/api/auth/refresh`       | Refresh cookie                          | Rotate the refresh token and issue an access token                             |
+| `POST` | `/api/auth/logout`        | Refresh cookie, if present              | Delete the current session and clear the cookie                                |
+| `GET`  | `/api/user/me`            | Bearer access token                     | Return the authenticated user, wallet, and recent transactions                 |
+| `POST` | `/api/account/transfer`   | Bearer access token and idempotency key | Transfer money between wallets; currently blocked by implementation mismatches |
+| `POST` | `/api/account/bankcredit` | Bearer access token                     | Development deposit route; not safe for production use                         |
 
 ## Health check
 
@@ -72,14 +72,14 @@ Creates a user and a default wallet. The wallet starts with `USD` currency and a
 
 ### Request body
 
-| Field | Type | Required | Validation |
-| --- | --- | --- | --- |
-| `firstName` | string | Yes | Trimmed; at least one character |
-| `lastName` | string | Yes | Trimmed; at least one character |
-| `email` | string | Conditional | Valid email; empty strings become absent |
-| `phone` | string | Conditional | Trimmed; at least 10 characters; empty strings become absent |
-| `password` | string | Yes | Trimmed; no minimum-strength rule is currently enforced |
-| `snapTag` | string | Yes | Trimmed; must start with `@` |
+| Field       | Type   | Required    | Validation                                                   |
+| ----------- | ------ | ----------- | ------------------------------------------------------------ |
+| `firstName` | string | Yes         | Trimmed; at least one character                              |
+| `lastName`  | string | Yes         | Trimmed; at least one character                              |
+| `email`     | string | Conditional | Valid email; empty strings become absent                     |
+| `phone`     | string | Conditional | Trimmed; at least 10 characters; empty strings become absent |
+| `password`  | string | Yes         | Trimmed; no minimum-strength rule is currently enforced      |
+| `snapTag`   | string | Yes         | Trimmed; must start with `@`                                 |
 
 At least one of `email` or `phone` is required. Both may be supplied.
 
@@ -87,8 +87,8 @@ At least one of `email` or `phone` is required. Both may be supplied.
 {
   "firstName": "Lamar",
   "lastName": "Lewis",
-  "email": "lewislamar20@outlook.com",
-  "password": "lamarL89!",
+  "email": "l***r@example.com",
+  "password": "<password>",
   "snapTag": "@lewislam"
 }
 ```
@@ -98,7 +98,7 @@ Successful response: `201 Created`
 ```json
 {
   "id": "6a640a04338109ea24f83859",
-  "email": "lewislamar20@outlook.com"
+  "email": "l***r@example.com"
 }
 ```
 
@@ -134,16 +134,16 @@ Authenticates with an email address, phone number, or SnapTag. A successful logi
 
 ### Request body
 
-| Field | Type | Required | Allowed values |
-| --- | --- | --- | --- |
-| `username` | string | Yes | Non-empty email, phone number, or SnapTag |
-| `password` | string | Yes | Non-empty string |
-| `method` | string | Yes | `EMAIL`, `PHONE`, or `SNAPTAG` |
+| Field      | Type   | Required | Allowed values                            |
+| ---------- | ------ | -------- | ----------------------------------------- |
+| `username` | string | Yes      | Non-empty email, phone number, or SnapTag |
+| `password` | string | Yes      | Non-empty string                          |
+| `method`   | string | Yes      | `EMAIL`, `PHONE`, or `SNAPTAG`            |
 
 ```json
 {
   "username": "@lewislam",
-  "password": "lamarL89!",
+  "password": "<password>",
   "method": "SNAPTAG"
 }
 ```
@@ -156,7 +156,7 @@ Successful response: `200 OK`
     "id": "6a640a04338109ea24f83859",
     "firstName": "Lamar",
     "lastName": "Lewis",
-    "email": "lewislamar20@outlook.com",
+    "email": "l***r@example.com",
     "phone": null,
     "snapTag": "@lewislam"
   },
@@ -183,7 +183,7 @@ Validation failure: `400 Bad Request`
 
 Unknown users and incorrect passwords return `401 Unauthorized` with the same generic response so the API does not reveal whether an identifier is registered:
 
-```json
+````json
 {
   "message": "Invalid username or password",
   "code": "INVALID_CREDENTIALS"
@@ -200,7 +200,7 @@ const response = await fetch("http://localhost:3000/api/auth/refresh", {
   method: "POST",
   credentials: "include",
 });
-```
+````
 
 Successful response: `200 OK`
 
@@ -267,7 +267,7 @@ Successful response: `200 OK`
     "id": "6a640a04338109ea24f83859",
     "firstName": "Lamar",
     "lastName": "Lewis",
-    "email": "lewislamar20@outlook.com",
+    "email": "l***r@example.com",
     "phone": null,
     "snapTag": "@lewislam",
     "wallet": {
@@ -338,11 +338,11 @@ Content-Type: application/json
 
 The request validator currently defines this body:
 
-| Field | Type | Required | Validation |
-| --- | --- | --- | --- |
-| `walletId` | string | Yes | No format validation currently applied |
-| `amountMinor` | number | Yes | Integer from `1` through `100000000` |
-| `description` | string | No | Trimmed; maximum 255 characters |
+| Field         | Type   | Required | Validation                             |
+| ------------- | ------ | -------- | -------------------------------------- |
+| `walletId`    | string | Yes      | No format validation currently applied |
+| `amountMinor` | number | Yes      | Integer from `1` through `100000000`   |
+| `description` | string | No       | Trimmed; maximum 255 characters        |
 
 ```json
 {
@@ -454,3 +454,4 @@ Validation and authentication middleware return JSON errors directly. Known HTTP
 ## Routes not currently exposed
 
 No Express routes currently expose withdrawals, refunds, wallet transaction history as a standalone endpoint, public user search, user updates, or user deletion.
+```
